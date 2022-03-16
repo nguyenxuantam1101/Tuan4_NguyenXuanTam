@@ -1,0 +1,53 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Index</h2>
+<style>
+    body {
+        background-color: white;
+        argin: 1.5em;
+    }
+
+    .bang {
+        border-collapse: collapse;
+        border-radius: 0.75em;
+        //overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    th, td {
+        padding: 1em;
+        border-bottom: 1px solid black;
+    }
+
+    .tieude {
+        background-color: aquamarine;
+    }
+</style>
+<table class="bang" border="1px">
+    <tr class="tieude">
+        <th>Mã thể loại</th>
+        <th>Tên thể loại</th>
+        <th>Tác vụ</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.maloai</td>
+            <td>@item.tenloai</td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.maloai }) |
+                @Html.ActionLink("Detail", "Detail", new { id = item.maloai }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.maloai })
+            </td>
+        </tr>
+    }
+</table>
+<button>
+    @Html.ActionLink("Create", "Create", "TheLoai")
+</button>
+
+
