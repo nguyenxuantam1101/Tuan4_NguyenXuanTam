@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Web;
 using System.Web.Mvc;
 using Tuan4_NguyenXuanTam.Models;
+using Tuan4_NguyenXuanTam.Mail;
 
 namespace Tuan4_NguyenXuanTam.Controllers
 {
@@ -117,17 +119,98 @@ namespace Tuan4_NguyenXuanTam.Controllers
             lstGiohang.Clear();
             return RedirectToAction("GioHang");
         }
+        //public ActionResult DatHang()
+        //{
+        //    List<GioHang> lstGiohang = Laygiohang();
+        //    foreach (var item in lstGiohang)
+        //    {
+        //        var s = data.Saches.FirstOrDefault(n => n.masach == item.masach);
+        //        s.soluongton = s.soluongton - item.iSoluong;
+        //    }
+        //    data.SubmitChanges();
+        //    lstGiohang.Clear();
+        //    return RedirectToAction("GioHang");
+        //}
+        [HttpGet]
         public ActionResult DatHang()
         {
-            List<GioHang> lstGiohang = Laygiohang();
-            foreach (var item in lstGiohang)
+            if (Session["TaiKhoan"] == null || Session["TaiKhoan"].ToString() == "")
             {
-                var s = data.Saches.FirstOrDefault(n => n.masach == item.masach);
-                s.soluongton = s.soluongton - item.iSoluong;
+                return RedirectToAction("DangNhap", "NguoiDung");
+            }
+            if (Session["GioHang"] == null)
+            {
+                return RedirectToAction("Index", "Sach");
+            }
+            List<GioHang> lstGioHang = Laygiohang();
+            ViewBag.Tongsoluong = TongSoLuong();
+            ViewBag.Tongtien = TongTien();
+            ViewBag.Tongsoluongsanpham = TongSoLuongSanPham();
+            return View(lstGioHang);
+        }
+        public ActionResult DatHang(FormCollection collection)
+        {
+            DonHang dh = new DonHang();
+            KhachHang kh = (KhachHang)Session["TaiKhoan"];
+            Sach s = new Sach();
+            List<GioHang> gh = Laygiohang();
+            var ngaygiao = String.Format("{0:MM/dd/yyyy}", collection["NgayGiao"]);
+            //if (DateTime.Parse(ngaygiao) <= DateTime.Now)
+            //{
+            //    ViewData["Error"] = "Ngày giao hàng phải lớn hơn ngày đặt hàng";
+            //}
+            //else
+            //{
+            //}
+            dh.makh = kh.makh;
+            dh.ngaydat = DateTime.Now;
+            dh.ngaygiao = DateTime.Parse(ngaygiao);
+            dh.giaohang = false;
+            dh.thanhtoan = false;
+
+            data.DonHangs.InsertOnSubmit(dh);
+            data.SubmitChanges();
+            foreach (var item in gh)
+            {
+                ChiTietDonHang ctdh = new ChiTietDonHang();
+                ctdh.madon = dh.madon;
+                ctdh.masach = item.masach;
+                ctdh.soluong = item.iSoluong;
+                ctdh.gia = (decimal)item.giaban;
+                s = data.Saches.Single(n => n.masach == item.masach);
+                s.soluongton -= ctdh.soluong;
+                data.SubmitChanges();
+                data.ChiTietDonHangs.InsertOnSubmit(ctdh);
+                var clientEmail = collection["clientEmail"];
+                try
+                {
+                    MailMessage mail = new MailMessage();
+                    mail.From = new MailAddress(MyMail.myEmail,"Cửa hàng sách");
+                    mail.To.Add(clientEmail);
+                    mail.Subject = "ĐƠN HÀNG ĐÃ XÁC NHẬN " + "MÃ ĐƠN HÀNG " + ctdh.madon;
+                    string body = "Chúng tôi sẽ giao hàng cho bạn sớm nhất có thể! \nCám ơn quý khách!";
+                    mail.Body = body;
+                    SmtpClient smtp = new SmtpClient();
+                    smtp.Host = "smtp.gmail.com";
+                    smtp.Port = 587;
+                    smtp.EnableSsl = true;
+                    smtp.Credentials = new System.Net.NetworkCredential(MyMail.myEmail, MyMail.passMyEmail);
+                    smtp.Send(mail);
+                    mail = null;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Lỗi chứng xác thực");
+                }
             }
             data.SubmitChanges();
-            lstGiohang.Clear();
-            return RedirectToAction("GioHang");
+            
+            Session["Giohang"] = null;
+            return RedirectToAction("XacnhanDonhang", "GioHang");
+        }
+        public ActionResult XacNhanDonHang()
+        {
+            return View();
         }
         public ActionResult Index()
         {

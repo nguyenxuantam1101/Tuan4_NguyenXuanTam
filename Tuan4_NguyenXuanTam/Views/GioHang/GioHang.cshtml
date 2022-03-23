@@ -46,14 +46,14 @@
             <tr style="font-weight: bold; text-align:left; color:red">
                 <td colspan="2"> Số loại sách: @ViewBag.Tongsoluongsanpham </td>
                 <td colspan="2"> Số lượng sách: @ViewBag.Tongsoluong </td>
-                <td colspan="4">Tổng tiền: @String.Format("{0:0,0}", @ViewBag.Tongtien)VNĐ</td>
+                <td colspan="4">Tổng tiền: @String.Format("{0:0,0}", @ViewBag.Tongtien) VNĐ</td>
             </tr>
-            <tr style="font-weight: bold; color:blue; text-align:right ">
+            <tr class="xoa-gio-hang" style="font-weight: bold; color:blue; text-align: right">
                 <td colspan-"5">
                     @Html.ActionLink("Xóa giỏ hàng", "XoaTatCaGioHang")
                 </td>
             </tr>
-            <tr style="font -weight:bold; color:yellow; text-align:right ">
+            <tr class="dat-hang" style="font-weight:bold; color: yellow; text-align: right">
                 <td colspan-"5">
                     @Html.ActionLink("Đặt hàng", "DatHang", "GioHang")
                 </td>
